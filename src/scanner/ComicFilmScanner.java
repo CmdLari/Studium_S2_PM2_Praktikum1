@@ -17,7 +17,7 @@ import static java.util.Objects.*;
 public class ComicFilmScanner {
 
     private final static Pattern COMIC_UND_FILM = Pattern.compile("(?:<td(?: rowspan=\"\\d+\")?>(?<comic>.*?)</td>)?<td>(?<film>.*?)</td>");
-    private final static Pattern FILM_UND_JAHR = Pattern.compile("(?<film>.*?) \\((?:.*?,\\s)?(?<date>\\d+)(?:–(?<dateEnd>\\d+))?");
+    private final static Pattern FILM_UND_JAHR = Pattern.compile("(?<film>.*?) \\((?:.*?,.*?)?(?<date>\\d+)(?:–(?<dateEnd>\\d+))?");
 
     private final Scanner scanner;
     private final Map<String, Map<YearInterval, List<String>>> comicMap = new HashMap<>();
@@ -49,11 +49,12 @@ public class ComicFilmScanner {
                     String jahr = filmUndJahr.group("date");
                     String endJahr = filmUndJahr.group("dateEnd");
                     YearInterval filmjahr = filmjahrrechner(jahr, endJahr);
-
                     if (comicUndFilm.group("comic") != null) {
                         comic = comicUndFilm.group("comic");
                     }
                     mapFiller(comic, filmjahr, filmtitel);
+                } else {
+                    System.err.printf("Could not parse data %s%n", film);
                 }
             }
         }
@@ -62,7 +63,6 @@ public class ComicFilmScanner {
 }
 
     private YearInterval filmjahrrechner (String jahr, String endJahr){
-
         if (isNull(endJahr)){
             return new YearInterval(Year.parse(jahr));
         }
@@ -72,7 +72,6 @@ public class ComicFilmScanner {
     }
 
     private void mapFiller(String comic, YearInterval jahr, String film){
-
         if(!comicMap.containsKey(comic)){
             comicMap.put(comic, new HashMap<>());
         }
@@ -82,6 +81,5 @@ public class ComicFilmScanner {
         else {
             comicMap.get(comic).get(jahr).add(film);
         }
-
     }
 }
